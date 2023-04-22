@@ -1,3 +1,21 @@
+/*
+    hat-freedom - Exploring the degrees of freedom in the new aperiodic monotile, 'the hat'.
+    Copyright (C) 2023  Tim Hutton
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 function degToRad(d) { return d * Math.PI / 180.0; }
 
 function generateVectors(gen) {
@@ -41,6 +59,15 @@ function generateInteriorTriangles(v) {
         tri_verts.push( v[ j * 3 ], v[ j * 3 + 1 ], v[ j * 3 + 2 ] );
     }
     return tri_verts;
+}
+
+function newOrientation(hat_def, r) {
+    // rotate the clock faces by r
+    let new_def = [];
+    for( let i = 0; i < hat_def.length; i++ ) {
+        new_def.push( (12 + hat_def[i] - r) % 12 );
+    }
+    return new_def;
 }
 
 window.onload = function() {
@@ -88,11 +115,12 @@ window.onload = function() {
     }
     scene.add(new THREE.AmbientLight(0xffffff, 0.1));
 
-    // a hard-coded patch of tiles
+    // a hard-coded patch of tiles, defined as the path from the origin to the peak, then the path around the tile
     const hats = [
         [ [], hat_def ],
         [ [4, 2, 11, 9, 0, 10], hat_def ],
         [ [4, 2, 11, 9, 0, 10, 4, 2, 11, 9, 0, 10], hat_def ],
+        [ [4, 2, 11, 9, 0, 10, 7, 9], newOrientation(hat_def, -2) ]
     ];
     for( let i = 0; i < hats.length; i++ ) {
         let preamble, amble;
@@ -109,13 +137,12 @@ window.onload = function() {
         scene.add( hat_tri );
     }
 
-    camera.position.x = 0;
-    camera.position.y = 0;
-    camera.position.z = -10;
+    const y = 2;
+    camera.position.set(0, y, 15);
     camera.up.set(0, 1, 0);
     orbit_controls = new THREE.OrbitControls( camera, renderer.domElement );
-    camera.lookAt( 0, -1, 0 );
-    orbit_controls.target.set( 0, -1, 0 );
+    camera.lookAt( 0, y, 0 );
+    orbit_controls.target.set( 0, y, 0 );
 
     renderer.domElement.addEventListener( 'mousemove', render, false );
     renderer.domElement.addEventListener( 'touchmove', render, false );
