@@ -1,0 +1,154 @@
+function degToRad(d) { return d * Math.PI / 180.0; }
+
+function generateVectors(gen) {
+    const v = new Array(12);
+    for( let i = 0; i < 12; i++ ) {
+        let twelve = gen[i % 2];
+        let normal = gen[(i % 2) + 2];
+        let rad = -degToRad(30 * i);
+        v[i] = twelve.clone();
+        v[i].applyAxisAngle(normal, rad);
+    }
+    return v;
+}
+
+function generateBoundaryVertices(v, preamble, amble) {
+    // generate [ x, y, z, x, y, z, ... ] for the boundary of a tile in a certain position
+    const points = [];
+    const point = new THREE.Vector3(0,0,0);
+    // walk to the starting point
+    for( let i = 0; i < preamble.length; i++ ) {
+        point.add( v[preamble[i]] );
+    }
+    // walk around the boundary of the shape
+    points.push( point.x, point.y, point.z );
+    for( let i = 0; i < amble.length - 1; i++ ) { // the figure is a loop, so we skip the last step
+        point.add( v[amble[i]] );
+        points.push( point.x, point.y, point.z );
+    }
+    return points;
+}
+
+function generateInteriorTriangles(v) {
+    // convert list of boundary points to triplets for the interior triangles
+    if(v.length != 14 * 3)
+        throw 'invalid length in array passed to generateInteriorTriangles'
+    // a hard-coded crease pattern assuming v is indexed anti-clockwise from the peak of the hat
+    const tris = [ 1,0,13, 2,1,3, 3,1,13, 4,3,5, 5,3,6, 6,3,7, 7,3,8, 8,3,13, 12,8,13, 9,8,12, 11,9,12, 10,9,11];
+    const tri_verts = [];
+    for( let i = 0; i < tris.length; i++) {
+        const j = tris[i];
+        tri_verts.push( v[ j * 3 ], v[ j * 3 + 1 ], v[ j * 3 + 2 ] );
+    }
+    return tri_verts;
+}
+
+window.onload = function() {
+
+    // Exploring the degrees of freedom in the aperiodic monotile, following a suggestion of Jim Propp:
+    //   https://mathenchant.wordpress.com/2023/04/20/seekers-of-the-one-stone/
+    // See thread at https://mathstodon.xyz/@timhutton/110238936531081002 for details and discussion
+
+    // initial generating vectors
+    const gen = [
+        new THREE.Vector3( 0, Math.sqrt(3), 0 ), // "12 o'clock" on the red clock face
+        new THREE.Vector3( 0, 1, 0 ),            // "12 o'clock" on the blue clock face
+        new THREE.Vector3( 0, 0, 1 ),            // normal of red clock face
+        new THREE.Vector3( 0, 0, 1 ),            // normal of blue clock face
+    ];
+    gen[3].applyAxisAngle(gen[1], 0.5); // rotate one clock face a little to make the tiles non-planar
+
+    // generate the 12 vectors we will use to make the tiles
+    const v = generateVectors(gen); // indexed as 0=12 through 11
+
+    const hat_def = [7, 9, 6, 8, 5, 3, 3, 1, 4, 2, 11, 9, 0, 10]; // index into v; steps around the boundary anti-clockwise from the peak of the hat
+
+    // set up a scene
+    const scene = new THREE.Scene();
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize( window.innerWidth * 0.8, window.innerHeight * 0.8 );
+    const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+    document.body.appendChild( renderer.domElement );
+
+    // add some lights
+    {
+        const color = 0xFFFFFF;
+        const intensity = 1;
+        const light = new THREE.PointLight(color, intensity);
+        light.position.set(50, 20, -100);
+        scene.add(light);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.1));
+    }
+    {
+        const color = 0xFFFFFF;
+        const intensity = 1;
+        const light = new THREE.PointLight(color, intensity);
+        light.position.set(50, 20, 100);
+        scene.add(light);
+    }
+    scene.add(new THREE.AmbientLight(0xffffff, 0.1));
+
+    // a hard-coded patch of tiles
+    const hats = [
+        [ [], hat_def ],
+        [ [4, 2, 11, 9, 0, 10], hat_def ],
+        [ [4, 2, 11, 9, 0, 10, 4, 2, 11, 9, 0, 10], hat_def ],
+    ];
+    for( let i = 0; i < hats.length; i++ ) {
+        let preamble, amble;
+        [preamble, amble] = hats[i];
+        const boundary_points = generateBoundaryVertices( v, preamble, amble );
+        const tri_points = generateInteriorTriangles( boundary_points );
+        const hat_tri_geometry = new THREE.BufferGeometry();
+        hat_tri_geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( tri_points, 3 ) );
+        hat_tri_geometry.computeVertexNormals();
+        let color = new THREE.Color();
+        color.setHSL(Math.random(), 0.4, 0.7);
+        const hat_tri_material = new THREE.MeshStandardMaterial({ color: color, side: THREE.DoubleSide });
+        const hat_tri = new THREE.Mesh( hat_tri_geometry, hat_tri_material );
+        scene.add( hat_tri );
+    }
+
+    camera.position.x = 0;
+    camera.position.y = 0;
+    camera.position.z = -10;
+    camera.up.set(0, 1, 0);
+    orbit_controls = new THREE.OrbitControls( camera, renderer.domElement );
+    camera.lookAt( 0, -1, 0 );
+    orbit_controls.target.set( 0, -1, 0 );
+
+    renderer.domElement.addEventListener( 'mousemove', render, false );
+    renderer.domElement.addEventListener( 'touchmove', render, false );
+    renderer.domElement.addEventListener( 'mousedown',  render, false );
+    renderer.domElement.addEventListener( 'touchstart',  render, false );
+    renderer.domElement.addEventListener( 'mouseup',  render, false );
+    renderer.domElement.addEventListener( 'mouseout',  render, false );
+    renderer.domElement.addEventListener( 'touchend',  render, false );
+    renderer.domElement.addEventListener( 'touchcancel',  render, false );
+    renderer.domElement.addEventListener( 'wheel',  render, false );
+
+    running = false;
+    sleep_per_step = 100;
+
+    function render() {
+        renderer.render( scene, camera );
+    }
+
+    function animate() {
+        if(running) {
+            // TODO: change something
+            render();
+
+            setTimeout(() => { requestAnimationFrame(animate); }, sleep_per_step);
+        }
+    }
+
+    function toggle_running() {
+        running = !running;
+        if(running)
+            animate();
+    }
+
+    render();
+    animate();
+}
