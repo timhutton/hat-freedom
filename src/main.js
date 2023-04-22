@@ -65,7 +65,7 @@ function newOrientation(hat_def, r) {
     // rotate the clock faces by r
     let new_def = [];
     for( let i = 0; i < hat_def.length; i++ ) {
-        new_def.push( (12 + hat_def[i] - r) % 12 );
+        new_def.push( (12 + hat_def[i] + r) % 12 );
     }
     return new_def;
 }
@@ -83,7 +83,7 @@ window.onload = function() {
         new THREE.Vector3( 0, 0, 1 ),            // normal of red clock face
         new THREE.Vector3( 0, 0, 1 ),            // normal of blue clock face
     ];
-    gen[3].applyAxisAngle(gen[1], 0.5); // rotate one clock face a little to make the tiles non-planar
+    gen[3].applyAxisAngle(gen[1], 0.3); // rotate one clock face a little to make the tiles non-planar
 
     // generate the 12 vectors we will use to make the tiles
     const v = generateVectors(gen); // indexed as 0=12 through 11
@@ -100,27 +100,27 @@ window.onload = function() {
     // add some lights
     {
         const color = 0xFFFFFF;
-        const intensity = 1;
+        const intensity = 0.6;
         const light = new THREE.PointLight(color, intensity);
         light.position.set(50, 20, -100);
         scene.add(light);
-        scene.add(new THREE.AmbientLight(0xffffff, 0.1));
     }
     {
         const color = 0xFFFFFF;
-        const intensity = 1;
+        const intensity = 0.6;
         const light = new THREE.PointLight(color, intensity);
         light.position.set(50, 20, 100);
         scene.add(light);
     }
-    scene.add(new THREE.AmbientLight(0xffffff, 0.1));
+    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
 
     // a hard-coded patch of tiles, defined as the path from the origin to the peak, then the path around the tile
     const hats = [
         [ [], hat_def ],
         [ [4, 2, 11, 9, 0, 10], hat_def ],
         [ [4, 2, 11, 9, 0, 10, 4, 2, 11, 9, 0, 10], hat_def ],
-        [ [4, 2, 11, 9, 0, 10, 7, 9], newOrientation(hat_def, -2) ]
+        [ [4, 2, 11, 9, 0, 10, 7, 9], newOrientation(hat_def, 2) ],
+        [ [4, 6], newOrientation(hat_def, -4) ],
     ];
     for( let i = 0; i < hats.length; i++ ) {
         let preamble, amble;
