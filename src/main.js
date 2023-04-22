@@ -61,11 +61,16 @@ function generateInteriorTriangles(v) {
     return tri_verts;
 }
 
-function newOrientation(hat_def, r) {
-    // rotate the clock faces by r
+function newOrientation(hat_def, r, flip=false) {
+    // rotate the clock faces by r, with optional flipping around 12
     let new_def = [];
     for( let i = 0; i < hat_def.length; i++ ) {
-        new_def.push( (12 + hat_def[i] + r) % 12 );
+        let p = hat_def[i];
+        if(flip) {
+            p = (12 - p) % 12;
+        }
+        p = (12 + p + r) % 12; // rotate
+        new_def.push( p );
     }
     return new_def;
 }
@@ -121,6 +126,8 @@ window.onload = function() {
         [ [4, 2, 11, 9, 0, 10, 4, 2, 11, 9, 0, 10], hat_def ],
         [ [4, 2, 11, 9, 0, 10, 7, 9], newOrientation(hat_def, 2) ],
         [ [4, 6], newOrientation(hat_def, -4) ],
+        [ [7, 9].concat(newOrientation([11, 9, 0, 10], -2)), newOrientation(hat_def, -2) ],
+        [ [7, 9, 6, 8, 5, 3], newOrientation(hat_def, -2, true) ],
     ];
     for( let i = 0; i < hats.length; i++ ) {
         let preamble, amble;
@@ -131,7 +138,7 @@ window.onload = function() {
         hat_tri_geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( tri_points, 3 ) );
         hat_tri_geometry.computeVertexNormals();
         let color = new THREE.Color();
-        color.setHSL(Math.random(), 0.4, 0.7);
+        color.setHSL(i / hats.length, 0.4, 0.7);
         const hat_tri_material = new THREE.MeshStandardMaterial({ color: color, side: THREE.DoubleSide });
         const hat_tri = new THREE.Mesh( hat_tri_geometry, hat_tri_material );
         scene.add( hat_tri );
