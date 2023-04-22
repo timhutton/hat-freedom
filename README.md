@@ -11,7 +11,7 @@ The hat monotile is made of short (blue) and long (red) vectors, here indexed by
 
 By changing the relative length of the vectors we can smoothly change from the 'hat' to the 'turtle'.
 
-By changing the _plane_ of one of the clock faces we can get non-planar tiles.
+By rotating one of the clock faces in 3D we can get non-planar tiles.
 
 <a href="https://timhutton.github.io/hat-freedom/
 "><img src="https://user-images.githubusercontent.com/647092/233796153-bee07ad2-13ab-4f09-80b4-267c85ff3d48.png"></a>
