@@ -19,6 +19,7 @@
 function degToRad(d) { return d * Math.PI / 180.0; }
 
 function generateVectors(gen) {
+    // given the 12 o'clock position and face normal of two clocks, generate the 12 vectors we will use to make the tiles
     const v = new Array(12);
     for( let i = 0; i < 12; i++ ) {
         let twelve = gen[i % 2];
@@ -76,11 +77,6 @@ function newOrientation(hat_def, r, flip=false) {
 }
 
 window.onload = function() {
-
-    // Exploring the degrees of freedom in the aperiodic monotile, following a suggestion of Jim Propp:
-    //   https://mathenchant.wordpress.com/2023/04/20/seekers-of-the-one-stone/
-    // See thread at https://mathstodon.xyz/@timhutton/110238936531081002 for details and discussion
-
     // initial generating vectors
     const gen = [
         new THREE.Vector3( 0, Math.sqrt(3), 0 ), // "12 o'clock" on the red clock face
@@ -93,7 +89,8 @@ window.onload = function() {
     // generate the 12 vectors we will use to make the tiles
     const v = generateVectors(gen); // indexed as 0=12 through 11
 
-    const hat_def = [7, 9, 6, 8, 5, 3, 3, 1, 4, 2, 11, 9, 0, 10]; // index into v; steps around the boundary anti-clockwise from the peak of the hat
+    // define the hat by an anti-clockwise path around the boundary starting from the peak, each entry is an index into v
+    const hat_def = [7, 9, 6, 8, 5, 3, 3, 1, 4, 2, 11, 9, 0, 10];
 
     // set up a scene
     const scene = new THREE.Scene();
