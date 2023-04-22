@@ -128,6 +128,7 @@ window.onload = function() {
         [ [4, 6], newOrientation(hat_def, -4) ],
         [ [7, 9].concat(newOrientation([11, 9, 0, 10], -2)), newOrientation(hat_def, -2) ],
         [ [7, 9, 6, 8, 5, 3], newOrientation(hat_def, -2, true) ],
+        [ [4, 2, 11, 9, 0, 10, 4, 2, 11, 9, 0, 10].concat(newOrientation([3, 1, 4, 2, 11, 9, 0, 10], -2, true)), newOrientation(hat_def, -2, true) ],
     ];
     for( let i = 0; i < hats.length; i++ ) {
         let preamble, amble;
