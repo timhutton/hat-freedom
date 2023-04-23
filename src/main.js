@@ -115,7 +115,7 @@ window.onload = function() {
     ];
     const nonplanar = true;
     if( nonplanar ) {
-        gen[3].applyAxisAngle(gen[1], 0.3); // rotate one clock face a little to make the tiles non-planar
+        gen[3].applyAxisAngle(gen[1], 0.8); // rotate one clock face a little to make the tiles non-planar
     }
 
     // generate the 12 vectors we will use to make the tiles
