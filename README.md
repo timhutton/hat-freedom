@@ -14,4 +14,6 @@ By rotating one of the clock faces in 3D we can get non-planar tiles.
 <a href="https://timhutton.github.io/hat-freedom/
 "><img src="https://user-images.githubusercontent.com/647092/233796153-bee07ad2-13ab-4f09-80b4-267c85ff3d48.png"></a>
 
+While non-planar tiles are fun, sadly this breaks the monotile-ness - the tiles are now different shapes in 3D.
+
 See thread at https://mathstodon.xyz/@timhutton/110238936531081002 for details and discussion.
