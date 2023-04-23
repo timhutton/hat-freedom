@@ -76,6 +76,35 @@ function newOrientation(hat_def, r, flip=false) {
     return new_def;
 }
 
+function check_is_closed(hat_def, v) {
+    // check that the path around the hat is closed
+    const p = new THREE.Vector3(0,0,0);
+    for( let i = 0; i < hat_def.length; i++ ) {
+        p.add( v[hat_def[i]] );
+    }
+    if(p.length() > 1e-5) {
+        console.log(p, v);
+        throw "error: hat is not closed";
+    }
+}
+
+function check_flip12_is_mirror(hat_def, v) {
+    // check that the flipped version of the tile (obtained by using vectors mirrored across v12) is a mirror image
+    const flipped_hat_def = newOrientation(hat_def, 0, true);
+    const p1 = new THREE.Vector3(0,0,0);
+    const p2 = new THREE.Vector3(0,0,0);
+    for( let i = 0; i < hat_def.length; i++ ) {
+        p1.add( v[hat_def[i]] );
+        p2.add( v[flipped_hat_def[i]] );
+        const error = new THREE.Vector3(p1.x + p2.x, p1.y - p2.y, p1.z - p2.z); // expect to be flipped in x
+        if(error.length() > 1e-5) {
+            console.log(hat_def, flipped_hat_def);
+            console.log(i, p1, p2, error);
+            throw "error: flipped hat is not mirror";
+        }
+    }
+}
+
 window.onload = function() {
     // initial generating vectors
     const gen = [
@@ -84,23 +113,19 @@ window.onload = function() {
         new THREE.Vector3( 0, 0, 1 ),            // normal of red clock face
         new THREE.Vector3( 0, 0, 1 ),            // normal of blue clock face
     ];
-    gen[3].applyAxisAngle(gen[1], 0.3); // rotate one clock face a little to make the tiles non-planar
+    const nonplanar = true;
+    if( nonplanar ) {
+        gen[3].applyAxisAngle(gen[1], 0.3); // rotate one clock face a little to make the tiles non-planar
+    }
 
     // generate the 12 vectors we will use to make the tiles
     const v = generateVectors(gen); // indexed as 0=12 through 11
 
     // define the hat by an anti-clockwise path around the boundary starting from the peak, each entry is an index into v
     const hat_def = [7, 9, 6, 8, 5, 3, 3, 1, 4, 2, 11, 9, 0, 10];
-
-    // check that hat is a closed shape
-    {
-        const p = new THREE.Vector3(0,0,0);
-        for( let i = 0; i < hat_def.length; i++ ) {
-            p.add( v[hat_def[i]] );
-        }
-        const error = Math.sqrt(p.x*p.x + p.y*p.y + p.z*p.z);
-        if(error > 1e-5)
-            throw "error: hat is not closed: "+error.toString();
+    check_is_closed(hat_def, v);
+    if( !nonplanar ) {
+        check_flip12_is_mirror(hat_def, v);
     }
 
     // set up a scene
