@@ -92,6 +92,17 @@ window.onload = function() {
     // define the hat by an anti-clockwise path around the boundary starting from the peak, each entry is an index into v
     const hat_def = [7, 9, 6, 8, 5, 3, 3, 1, 4, 2, 11, 9, 0, 10];
 
+    // check that hat is a closed shape
+    {
+        const p = new THREE.Vector3(0,0,0);
+        for( let i = 0; i < hat_def.length; i++ ) {
+            p.add( v[hat_def[i]] );
+        }
+        const error = Math.sqrt(p.x*p.x + p.y*p.y + p.z*p.z);
+        if(error > 1e-5)
+            throw "error: hat is not closed: "+error.toString();
+    }
+
     // set up a scene
     const scene = new THREE.Scene();
     const renderer = new THREE.WebGLRenderer();
