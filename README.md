@@ -3,7 +3,7 @@ https://mathenchant.wordpress.com/2023/04/20/seekers-of-the-one-stone/
 
 **Live demo:** https://timhutton.github.io/hat-freedom/
 
-The hat monotile is made of short (blue) and long (red) vectors, here indexed by the position of the hour hand on a clock:
+The hat monotile is made of short (blue) and long (red) vectors, here labelled by the position of the hour hand on a clock:
 
 ![image](https://user-images.githubusercontent.com/647092/233796018-e7fdfc0b-b58f-4463-9421-d62b26f8aebe.png)
 
