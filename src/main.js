@@ -105,19 +105,7 @@ function check_flip12_is_mirror(hat_def, v) {
     }
 }
 
-window.onload = function() {
-    // initial generating vectors
-    const gen = [
-        new THREE.Vector3( 0, Math.sqrt(3), 0 ), // "12 o'clock" on the red clock face
-        new THREE.Vector3( 0, 1, 0 ),            // "12 o'clock" on the blue clock face
-        new THREE.Vector3( 0, 0, 1 ),            // normal of red clock face
-        new THREE.Vector3( 0, 0, 1 ),            // normal of blue clock face
-    ];
-    const nonplanar = true;
-    if( nonplanar ) {
-        gen[3].applyAxisAngle(gen[1], 0.8); // rotate one clock face a little to make the tiles non-planar
-    }
-
+function addHats(scene, gen, nonplanar) {
     // generate the 12 vectors we will use to make the tiles
     const v = generateVectors(gen); // indexed as 0=12 through 11
 
@@ -127,30 +115,6 @@ window.onload = function() {
     if( !nonplanar ) {
         check_flip12_is_mirror(hat_def, v);
     }
-
-    // set up a scene
-    const scene = new THREE.Scene();
-    const renderer = new THREE.WebGLRenderer();
-    renderer.setSize( window.innerWidth * 0.8, window.innerHeight * 0.8 );
-    const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-    document.body.appendChild( renderer.domElement );
-
-    // add some lights
-    {
-        const color = 0xFFFFFF;
-        const intensity = 0.6;
-        const light = new THREE.PointLight(color, intensity);
-        light.position.set(50, 20, -100);
-        scene.add(light);
-    }
-    {
-        const color = 0xFFFFFF;
-        const intensity = 0.6;
-        const light = new THREE.PointLight(color, intensity);
-        light.position.set(50, 20, 100);
-        scene.add(light);
-    }
-    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
 
     // a hard-coded patch of tiles, defined as the path from the origin to the peak, then the path around the tile
     const hats = [
@@ -187,10 +151,50 @@ window.onload = function() {
                 shape.lineTo(boundary_points[i*3], boundary_points[i*3+1]);
             shape.lineTo(boundary_points[0], boundary_points[1]);
             const hat_tri_geometry = new THREE.ShapeGeometry( shape );
-            const hat_tri = new THREE.Mesh( hat_tri_geometry, hat_tri_material ) ;
+            const hat_tri = new THREE.Mesh( hat_tri_geometry, hat_tri_material );
             scene.add( hat_tri );
         }
     }
+}
+
+window.onload = function() {
+    // set up a scene
+    const scene = new THREE.Scene();
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize( window.innerWidth * 0.8, window.innerHeight * 0.8 );
+    const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+    document.body.appendChild( renderer.domElement );
+
+    // add some lights
+    {
+        const color = 0xFFFFFF;
+        const intensity = 0.6;
+        const light = new THREE.PointLight(color, intensity);
+        light.position.set(50, 20, -100);
+        scene.add(light);
+    }
+    {
+        const color = 0xFFFFFF;
+        const intensity = 0.6;
+        const light = new THREE.PointLight(color, intensity);
+        light.position.set(50, 20, 100);
+        scene.add(light);
+    }
+    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+
+    // initial generating vectors
+    const gen = [
+        new THREE.Vector3( 0, Math.sqrt(3), 0 ), // "12 o'clock" on the red clock face
+        new THREE.Vector3( 0, 1, 0 ),            // "12 o'clock" on the blue clock face
+        new THREE.Vector3( 0, 0, 1 ),            // normal of red clock face
+        new THREE.Vector3( 0, 0, 1 ),            // normal of blue clock face
+    ];
+    const nonplanar = true;
+    if( nonplanar ) {
+        gen[3].applyAxisAngle(gen[1], 0.8); // rotate one clock face a little to make the tiles non-planar
+    }
+
+    addHats(scene, gen, nonplanar);
 
     const y = 2;
     camera.position.set(0, y, 15);
