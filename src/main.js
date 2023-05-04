@@ -127,6 +127,7 @@ function addHats(scene, gen, nonplanar) {
         [ [7, 9, 6, 8, 5, 3], newOrientation(hat_def, -2, true) ],
         [ [4, 2, 11, 9, 0, 10, 4, 2, 11, 9, 0, 10].concat(newOrientation([3, 1, 4, 2, 11, 9, 0, 10], -2, true)), newOrientation(hat_def, -2, true) ],
     ];
+    const added_items = [];
     for( let i = 0; i < hats.length; i++ ) {
         let preamble, amble;
         [preamble, amble] = hats[i];
@@ -142,6 +143,7 @@ function addHats(scene, gen, nonplanar) {
             hat_tri_geometry.computeVertexNormals();
             const hat_tri = new THREE.Mesh( hat_tri_geometry, hat_tri_material );
             scene.add( hat_tri );
+            added_items.push( hat_tri );
         }
         else {
             // add planar polygon using Shape since a fixed set of triangles is not always appropriate
@@ -153,8 +155,10 @@ function addHats(scene, gen, nonplanar) {
             const hat_tri_geometry = new THREE.ShapeGeometry( shape );
             const hat_tri = new THREE.Mesh( hat_tri_geometry, hat_tri_material );
             scene.add( hat_tri );
+            added_items.push( hat_tri );
         }
     }
+    return added_items;
 }
 
 window.onload = function() {
@@ -190,11 +194,13 @@ window.onload = function() {
         new THREE.Vector3( 0, 0, 1 ),            // normal of blue clock face
     ];
     const nonplanar = true;
+    theta = -1.0;
     if( nonplanar ) {
-        gen[3].applyAxisAngle(gen[1], 0.8); // rotate one clock face a little to make the tiles non-planar
+        gen[3].applyAxisAngle(gen[1], theta); // rotate one clock face a little to make the tiles non-planar
     }
 
-    addHats(scene, gen, nonplanar);
+    // generate hats from these vectors and add them to the scene
+    added_items = addHats(scene, gen, nonplanar);
 
     const y = 2;
     camera.position.set(0, y, 15);
@@ -213,7 +219,9 @@ window.onload = function() {
     renderer.domElement.addEventListener( 'touchcancel',  render, false );
     renderer.domElement.addEventListener( 'wheel',  render, false );
 
-    running = false;
+    running = true;
+
+    dtheta = 0.03;
     sleep_per_step = 100;
 
     function render() {
@@ -222,7 +230,19 @@ window.onload = function() {
 
     function animate() {
         if(running) {
-            // TODO: change something
+            // remove old hats
+            for(let i = 0; i < added_items.length; i++)
+                scene.remove(added_items[i]);
+
+            // change the generating vectors
+            gen[3].applyAxisAngle(gen[1], dtheta); // rotate one clock face a little more
+            if( Math.abs(theta) > 1.0 )
+                dtheta *= -1.0;
+            theta += dtheta;
+
+            // regenerate new hats
+            added_items = addHats(scene, gen, nonplanar);
+
             render();
 
             setTimeout(() => { requestAnimationFrame(animate); }, sleep_per_step);
