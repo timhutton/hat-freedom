@@ -167,15 +167,29 @@ window.onload = function() {
         let preamble, amble;
         [preamble, amble] = hats[i];
         const boundary_points = generateBoundaryVertices( v, preamble, amble );
-        const tri_points = generateInteriorTriangles( boundary_points );
-        const hat_tri_geometry = new THREE.BufferGeometry();
-        hat_tri_geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( tri_points, 3 ) );
-        hat_tri_geometry.computeVertexNormals();
         let color = new THREE.Color();
         color.setHSL(i / hats.length, 0.4, 0.7);
         const hat_tri_material = new THREE.MeshStandardMaterial({ color: color, side: THREE.DoubleSide });
-        const hat_tri = new THREE.Mesh( hat_tri_geometry, hat_tri_material );
-        scene.add( hat_tri );
+        if( nonplanar ) {
+            // add non-planar polygon using a fixed set of triangles
+            const tri_points = generateInteriorTriangles( boundary_points );
+            const hat_tri_geometry = new THREE.BufferGeometry();
+            hat_tri_geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( tri_points, 3 ) );
+            hat_tri_geometry.computeVertexNormals();
+            const hat_tri = new THREE.Mesh( hat_tri_geometry, hat_tri_material );
+            scene.add( hat_tri );
+        }
+        else {
+            // add planar polygon using Shape since a fixed set of triangles is not always appropriate
+            const shape = new THREE.Shape();
+            shape.moveTo(boundary_points[0], boundary_points[1]);
+            for(let i = 1; i < boundary_points.length / 3; i++)
+                shape.lineTo(boundary_points[i*3], boundary_points[i*3+1]);
+            shape.lineTo(boundary_points[0], boundary_points[1]);
+            const hat_tri_geometry = new THREE.ShapeGeometry( shape );
+            const hat_tri = new THREE.Mesh( hat_tri_geometry, hat_tri_material ) ;
+            scene.add( hat_tri );
+        }
     }
 
     const y = 2;
